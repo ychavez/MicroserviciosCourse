@@ -1,0 +1,95 @@
+version: '3.4'
+
+services:
+  catalog.api:
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - "DatabaseSettings__ConnectionString=mongodb://catalogdb:27017"
+    ports:
+      - "8000:80"
+    depends_on:
+      - "catalogdb"
+    container_name: "catalog.api"  
+    
+  catalogdb:
+    container_name: "catalogdb"
+    ports:
+     - "27017:27017"
+    volumes:
+     - "mongo_data:/data/db"  
+     
+     
+
+  basket.api:
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - "CacheSettings__ConnectionString=basketdb:6379"
+      - "EventBusSettings__HostAddress=amqp://guest:guest@rabbitmq:5672"
+      - "GrpcSettings__HostAddress=http://existence.grpc:80"
+    ports:
+      - "8001:80"
+    container_name: "basket.api"
+    depends_on:
+      - "basketdb"
+      - "existence.grpc"
+      - "rabbitmq"
+
+
+  basketdb:
+    container_name: "basketdb"
+    ports:
+      -  "6379:6379"
+
+  orderdb:
+   container_name: "orderdb"
+   environment:
+       SA_PASSWORD: "Passw0rd23"
+       ACCEPT_EULA: "Y"
+   ports:
+     - "1433:1433"
+ 
+  ordering.api:
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ConnectionStrings__OrderingConnectionString=Server=orderdb;Database=OrderDb;User Id=sa;Password=Passw0rd23
+    ports:
+      - "8002:80"
+    container_name: ordering.api
+    depends_on:
+      - orderdb
+      - rabbitmq
+
+  rabbitmq:
+   container_name: rabbitmq
+   ports:
+    - "5672:5672"
+    - "15672:15672"
+
+  authentication.api:
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ConnectionStrings__OrderingConnectionString=Server=orderdb;Database=AccouuntDb;User Id=sa;Password=Passw0rd23
+    ports:
+      - "8003:80"
+    container_name: "authentication.api"
+
+
+
+  existence.grpc:
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=http://+:80
+    ports:
+      - "80"
+      - "443"
+    volumes:
+      - ${APPDATA}/Microsoft/UserSecrets:/root/.microsoft/usersecrets:ro
+    container_name: "existence.grpc"
+
+  api.gateway:
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+    ports:
+      - "8004:80"
+    container_name: "api.gateway"
+

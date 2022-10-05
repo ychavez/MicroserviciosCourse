@@ -1,0 +1,58 @@
+version: '3.4'
+
+services:
+  api.gateway:
+    image: ${DOCKER_REGISTRY-}apigateway
+    build:
+      context: .
+      dockerfile: Services/Gateway/Api.Gateway/Dockerfile
+
+  basket.api:
+    image: ${DOCKER_REGISTRY-}basketapi
+    build:
+      context: .
+      dockerfile: Services/Basket/Basket.Api/Dockerfile
+
+
+  catalog.api:
+    image: ${DOCKER_REGISTRY-}catalogapi
+    build:
+      context: .
+      dockerfile: Services/Catalog/Catalog.Api/Catalog.Api/Dockerfile
+
+
+  existence.grpc:
+    image: ${DOCKER_REGISTRY-}existencegrpc
+    build:
+      context: .
+      dockerfile: Services/Existence/Existence.Grpc/Dockerfile
+
+
+  authentication.api:
+    image: ${DOCKER_REGISTRY-}authenticationapi
+    build:
+      context: .
+      dockerfile: Services/Security/Authentication.Api/Dockerfile
+
+
+  ordering.api:
+    image: ${DOCKER_REGISTRY-}orderingapi
+    build:
+      context: .
+      dockerfile: Services/Ordering/Ordering.Api/Dockerfile
+
+  catalogdb:
+    image: mongo
+
+
+  basketdb:
+    image: redis:alpine
+
+  orderdb:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+
+  rabbitmq:
+    image: rabbitmq:3-management-alpine
+
+volumes:
+  mongo_data:
